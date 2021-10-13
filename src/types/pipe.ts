@@ -13,23 +13,19 @@ type Pred<T> = {
   value: T[Pred<T>['column']]
 }
 
-type ErrorBrand<Err extends string> = Readonly<{
-  [key in Err]: void
-}>
-
 interface Order<T extends Tables[], N extends keyof Nats> {
   (query: Query<T>): void
   tag?: N
 }
-type Orders<T extends Tables[]> = Order<T, keyof Nats>[]
-type PropEq = <J, K extends keyof J>(column: K, value: J[K]) => Pred<J>
-type UnwrapOrder<T> = T extends Order<any, infer N> ? N : never
-type UnwrapOrders<T extends Order<any, keyof Nats>[]> = T extends [infer H, ...infer E] ? [UnwrapOrder<H>, ...(E extends NonEmptyArray<Order<any, keyof Nats>> ? UnwrapOrders<E> : [])] : never
 
-type Storm = <T extends Tables[], O extends Orders<T>, OK extends IsOrdered<UnwrapOrders<O>>>(q: Query<T>) => (...pipes: OK extends true ? O : ErrorBrand<'wrong order'>) => Knex.QueryBuilder
+type Orders<T extends Tables[]> = Order<T, keyof Nats>[]
+type PropEq = <J extends any, K extends keyof J>(column: K, value: J[K]) => Pred<J>
+type UnwrapOrders<O extends Orders<any>> = { [K in keyof O]: O[K] extends Order<any, infer N> ? N : never }
 
 type Filter = <T extends Tables[]>(pred: Pred<Join<T>>) => Order<T, 0>
 type OrderBy = <T extends Tables[]>(column: keyof Join<T>, desc?: boolean) => Order<T, 3>
+
+type Storm = <T extends Tables[], P extends Orders<T>>(q: Query<T>) => (...pipes: IsOrdered<P, UnwrapOrders<P>>) => Knex.QueryBuilder
 
 /* 
 type GroupBy = <T extends Tables[]>(context: any) => Pipe<1>
@@ -63,15 +59,6 @@ export const storm: Storm =
     console.log(query.id.toSQL())
     return query.id
   }
-
-const o = orderBy<[City, Address, User]>('biography', true)
-const f = filter<[City, Address, User]>(propEq('city.name', 'stuff'))
-
-type right = IsOrdered<UnwrapOrders<[typeof f, typeof o]>> // true, correct!
-type wrong = IsOrdered<UnwrapOrders<[typeof o, typeof f]>> // false, correct!
-
-const wrong1 = storm(users.address.city)(o, f) // ok, incorrect!
-const right1 = storm(users.address.city)(f, o) // ok, correct!
 
 const wrong2 = storm(users.address.city)(orderBy('biography', true), filter(propEq('city.name', 'stuff'))) // ok, incorrect!
 const right2 = storm(users.address.city)(filter(propEq('age', 770)), orderBy('biography', true)) // ok, correct!
