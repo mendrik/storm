@@ -1,0 +1,5 @@
+node_modules
+.idea
+*.iml
+init_db.sql
+src/db.ts

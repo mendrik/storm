@@ -1,0 +1,37 @@
+{
+  "name": "stormts",
+  "version": "1.0.0",
+  "description": "orm for typescript",
+  "main": "index.js",
+  "scripts": {
+    "generate": "ts-node src/generator/generator.ts",
+    "ohm": "ohm generateBundles --withTypes './src/grammar/*.ohm'",
+    "select": "ts-node src/app.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@wwwouter/typed-knex": "^4.4.0",
+    "dotenv": "^10.0.0",
+    "knex": "^0.95.11",
+    "mysql2": "^2.3.0",
+    "ohm-js": "^16.0.0",
+    "ts-morph": "^12.0.0"
+  },
+  "devDependencies": {
+    "@ohm-js/cli": "^1.0.0-pre.1",
+    "@types/node": "^16.10.2",
+    "@types/ramda": "^0.27.45",
+    "ansicolor": "^1.1.95",
+    "date-fns": "^2.24.0",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-typescript-prettier": "^4.2.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1",
+    "ramda": "^0.27.1",
+    "shrink-json": "^0.1.6",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  }
+}

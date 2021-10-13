@@ -1,0 +1,23 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["react", "prettier"],
+  "extends": ["airbnb-typescript-prettier"],
+  "parserOptions": {
+
+  },
+  "rules": {
+    "import/no-cycle": "off",
+    "no-debugger": "warn",
+    "no-return-assign": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "react/require-default-props": "off",
+    "react/jsx-props-no-spreading": "off",
+    "import/prefer-default-export": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "no-void": ["off", { "allowAsStatement": true }],
+    "no-console": ["off", { "allowAsStatement": true }],
+    "prettier/prettier": ["error", { "singleQuote": true }],
+    "prefer-arrow-callback": ["error", { "allowNamedFunctions": true }]
+  }
+}

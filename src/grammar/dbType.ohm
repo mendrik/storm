@@ -1,0 +1,44 @@
+DbType {
+    Type  =
+     | WithDefault
+     | NotNull
+     | Unique
+     | OnDelete
+     | OnUpdate
+     | Increment
+     | Primary
+     | Unsigned
+     | ParamType
+     | ArrayType
+     | SimpleType
+
+    ParamType = TypeChars+ "<" NonemptyListOf<Arg, ","> ">"
+    WithDefault = "WithDefault" "<" Type "," Arg ">"
+    OnDelete = "OnDelete" "<" Type "," Arg ">"
+    OnUpdate = "OnUpdate" "<" Type "," Arg ">"
+    Increment = "Increment" "<" Type ">"
+    Primary = "Primary" "<" Type ">"
+    Unsigned = "Unsigned" "<" Type ">"
+    NotNull = "NotNull" "<" Type ">"
+    Unique = "Unique" "<" Type ">"
+    ArrayType = alnum+ "[]"
+    SimpleType = TypeChars+
+
+    Arg =
+     | Object
+     | Quoted
+     | digit+
+     | Boolean
+
+	Quoted =
+     | "\"" Unquote1+ "\""
+     | "'" Unquote2+ "'"
+
+    TypeChars = alnum | "$" | "_"
+    Unquote1 = alnum | "(" | ")" | " " | ";" | "." | "'"
+    Unquote2 = alnum | "(" | ")" | " " | ";" | "." | "\""
+
+    Boolean = "true" | "false"
+    Object = "{" ListOf<Prop, ";"> "}"
+    Prop = alnum+ ":" Arg
+}

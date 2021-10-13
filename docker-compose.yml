@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  database:
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=storm42
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '3307:3306'
