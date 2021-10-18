@@ -1,8 +1,8 @@
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json }
-export type Head<T extends unknown[]> = T[0]
+export type Head<T extends readonly unknown[]> = T[0]
 export type Last<T extends readonly unknown[]> = T extends readonly [...infer _, infer U] ? U : undefined
-export type Tail<T extends unknown[]> = T extends [unknown, ...infer TailType] ? TailType : never
-export type Length<T extends unknown[]> = T['length']
+export type Tail<T extends readonly unknown[]> = T extends [unknown, ...infer TailType] ? TailType : never
+export type Length<T extends readonly unknown[]> = T['length']
 
 export type Prepend<I, T extends unknown[]> = [I, ...T]
 export type Append<I, T extends unknown[]> = [...T, I]
@@ -12,7 +12,7 @@ export type TupleToUnion<T extends readonly any[]> = T[number]
 export type KeysOfUnion<T> = T extends T ? keyof T : never
 
 export type ComparisonOperator = '=' | '>' | '>=' | '<' | '<=' | '<>'
-export type Reverse<Tuple extends any[]> = Tuple extends [infer Head, ...infer Rest] ? [...Reverse<Rest>, Head] : []
+export type Reverse<Tuple extends readonly unknown[]> = Tuple extends [infer Head, ...infer Rest] ? [...Reverse<Rest>, Head] : []
 
 export type Cast<X, Y> = X extends Y ? X : Y
 export type Unboxed<T> = T extends (infer U)[] ? U : T

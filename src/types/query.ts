@@ -4,11 +4,11 @@ import { Tables } from '../db'
 
 type CastArray<T> = T extends any[] ? T : []
 
-type Relations<C extends Tables[], T = Head<C>> = {
+type Relations<C extends readonly Tables[], T = Head<C>> = {
   [K in keyof T as Unboxed<T[K]> extends Tables ? K : never]: Query<CastArray<Prepend<Unboxed<T[K]>, C>>>
 }
 
-export type Query<C extends Tables[]> = {
+export type Query<C extends readonly Tables[]> = {
   id: Knex.QueryBuilder
 } & Relations<C>
 

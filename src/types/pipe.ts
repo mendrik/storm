@@ -1,31 +1,34 @@
 import { Knex } from 'knex'
 import { juxt } from 'ramda'
 import { Tables, users } from '../db'
-import { Address, City, User } from '../model'
 import { Join } from './joins'
 import { IsOrdered, Nats } from './nats'
 import { Query } from './query'
-import { ComparisonOperator, NonEmptyArray } from './types'
+import { ComparisonOperator } from './types'
 
-type Pred<T> = {
-  column: keyof T
-  operator: ComparisonOperator
-  value: T[Pred<T>['column']]
+interface Order<N extends keyof Nats, D = any> {
+  <T extends Tables[]>(query: Query<T>): void
+  tag?: { n: N; d: D }
 }
 
-interface Order<T extends Tables[], N extends keyof Nats> {
-  (query: Query<T>): void
-  tag?: N
-}
+type Pred<T> = { column: keyof T; operator: ComparisonOperator; value: T[Pred<T>['column']] }
+type PropEq = <J>(column: keyof J, value: J[typeof column]) => Pred<J>
 
-type Orders<T extends Tables[]> = Order<T, keyof Nats>[]
-type PropEq = <J extends any, K extends keyof J>(column: K, value: J[K]) => Pred<J>
-type UnwrapOrders<O extends Orders<any>> = { [K in keyof O]: O[K] extends Order<any, infer N> ? N : never }
+type UnwrapOrders<O extends any[]> = { [K in keyof O]: O[K] extends Order<infer N> ? N : never }
 
-type Filter = <T extends Tables[]>(pred: Pred<Join<T>>) => Order<T, 0>
-type OrderBy = <T extends Tables[]>(column: keyof Join<T>, desc?: boolean) => Order<T, 3>
+type Filter = <D>(pred: Pred<D>) => Order<0, D>
+type OrderBy = <D>(column: keyof D, desc?: boolean) => Order<3, D>
+type OrderBy2 = <D>(column: keyof D, desc?: boolean) => Order<4, D>
 
-type Storm = <T extends Tables[], P extends Orders<T>>(q: Query<T>) => (...pipes: IsOrdered<P, UnwrapOrders<P>>) => Knex.QueryBuilder
+// prettier-ignore
+type PipeGuard<O extends any[]> = IsOrdered<UnwrapOrders<O>> extends true
+  ? O
+  : 'Wrong order of pipes'[]
+
+// prettier-ignore
+type Storm = <T extends Tables[]>(q: Query<T>) =>
+  <O extends Order<keyof Nats, any>[]>
+  (...pipes: PipeGuard<O>) => Knex.QueryBuilder
 
 /* 
 type GroupBy = <T extends Tables[]>(context: any) => Pipe<1>
@@ -38,9 +41,9 @@ type Select = <T extends Tables[]>(context: any) => Pipe<5>
 */
 
 export const propEq: PropEq = (column, value) => ({
-  column: column,
+  column,
   operator: '=',
-  value: value
+  value
 })
 
 export const filter: Filter = pred => query => {
@@ -52,13 +55,17 @@ export const orderBy: OrderBy = (column, desc) => query => {
   query.id.orderBy(column, desc ? 'desc' : 'asc')
 }
 
+export const orderBy2: OrderBy2 = (column, desc) => query => {
+  query.id.orderBy(column, desc ? 'desc' : 'asc')
+}
+
 export const storm: Storm =
   query =>
   (...pipes) => {
-    juxt(pipes)(query)
+    juxt(pipes as any[])(query)
     console.log(query.id.toSQL())
     return query.id
   }
 
-const wrong2 = storm(users.address.city)(orderBy('biography', true), filter(propEq('city.name', 'stuff'))) // ok, incorrect!
-const right2 = storm(users.address.city)(filter(propEq('age', 770)), orderBy('biography', true)) // ok, correct!
+// const wrong2 = storm(users.address.city)(orderBy('biography', true), filter(propEq('city.name', 'stuff'))) // ok, incorrect!
+const right2 = storm(users.address.city)(orderBy('age', false), orderBy2('biography', true)) // ok, correct!

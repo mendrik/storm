@@ -31,4 +31,4 @@ type GT<T1 extends Nat, T2 extends Nat> = TypeEqual<T1, T2> extends true
 type AnyGT<T1, T2> = T1 extends keyof Nats ? (T2 extends keyof Nats ? GT<Nats[T1], Nats[T2]> : false) : false
 type IsDesc<T extends any[]> = T extends [] ? true : T extends [infer _] ? true : T extends [infer T1, infer T2, ...infer Ts] ? (AnyGT<T1, T2> extends true ? IsDesc<[T2, ...Ts]> : false) : false
 type IsOrdered$<T extends any[]> = IsDesc<T> extends true ? true : IsDesc<T>
-export type IsOrdered<T extends any[], ORD extends number[]> = IsOrdered$<Reverse<ORD>> extends true ? T : never
+export type IsOrdered<ORD extends number[]> = IsOrdered$<Reverse<ORD>>
