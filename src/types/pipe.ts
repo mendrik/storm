@@ -1,11 +1,10 @@
 import { Knex } from 'knex'
-import { type } from 'os'
 import { juxt } from 'ramda'
 import { Tables, users } from '../db'
 import { Join } from './joins'
 import { IsOrdered, Nats } from './nats'
 import { Query } from './query'
-import { ComparisonOperator, ExpandRecursively, NonEmptyArray, Unboxed, UnionToTuple } from './types'
+import { ComparisonOperator, NonEmptyArray } from './types'
 
 interface Order<N extends keyof Nats, D = any> {
   <T extends Tables[]>(query: Query<T>): { n: N; d: D } | void
