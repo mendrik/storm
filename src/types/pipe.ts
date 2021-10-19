@@ -1,34 +1,24 @@
 import { Knex } from 'knex'
+import { type } from 'os'
 import { juxt } from 'ramda'
 import { Tables, users } from '../db'
 import { Join } from './joins'
 import { IsOrdered, Nats } from './nats'
 import { Query } from './query'
-import { ComparisonOperator } from './types'
+import { ComparisonOperator, ExpandRecursively, NonEmptyArray, Unboxed, UnionToTuple } from './types'
 
 interface Order<N extends keyof Nats, D = any> {
-  <T extends Tables[]>(query: Query<T>): void
-  tag?: { n: N; d: D }
+  <T extends Tables[]>(query: Query<T>): { n: N; d: D } | void
 }
 
 type Pred<T> = { column: keyof T; operator: ComparisonOperator; value: T[Pred<T>['column']] }
 type PropEq = <J>(column: keyof J, value: J[typeof column]) => Pred<J>
 
-type UnwrapOrders<O extends any[]> = { [K in keyof O]: O[K] extends Order<infer N> ? N : never }
+// type UnwrapOrders<O extends any[]> = { [K in keyof O]: O[K] extends Order<infer N, any> ? N : never }
 
 type Filter = <D>(pred: Pred<D>) => Order<0, D>
 type OrderBy = <D>(column: keyof D, desc?: boolean) => Order<3, D>
 type OrderBy2 = <D>(column: keyof D, desc?: boolean) => Order<4, D>
-
-// prettier-ignore
-type PipeGuard<O extends any[]> = IsOrdered<UnwrapOrders<O>> extends true
-  ? O
-  : 'Wrong order of pipes'[]
-
-// prettier-ignore
-type Storm = <T extends Tables[]>(q: Query<T>) =>
-  <O extends Order<keyof Nats, any>[]>
-  (...pipes: PipeGuard<O>) => Knex.QueryBuilder
 
 /* 
 type GroupBy = <T extends Tables[]>(context: any) => Pipe<1>
@@ -51,13 +41,27 @@ export const filter: Filter = pred => query => {
   query.id.where(column, operator, value as any)
 }
 
-export const orderBy: OrderBy = (column, desc) => query => {
-  query.id.orderBy(column, desc ? 'desc' : 'asc')
-}
+// prettier-ignore
+export const orderBy: OrderBy =
+  (column, desc) => query => {
+    query.id.orderBy(column, desc ? 'desc' : 'asc')
+  }
 
 export const orderBy2: OrderBy2 = (column, desc) => query => {
   query.id.orderBy(column, desc ? 'desc' : 'asc')
 }
+
+// prettier-ignore
+type UnwrapOrders<O> = O extends NonEmptyArray<any>
+  ? O extends [Order<infer N, any>, ...infer T] ? [N, ...UnwrapOrders<T>] : never
+  : []
+
+// type UOTest = UnwrapOrders<[Order<3, {}>, Order<1, {}>, Order<0, {}>, Order<4, {}>]>
+type PipeGuard<J, O extends Order<keyof Nats, J>[]> = IsOrdered<UnwrapOrders<O>> extends true ? O : never
+
+// prettier-ignore
+type Storm = <T extends Tables[], J extends Join<T>>(q:  Query<T>) =>
+  <K extends keyof Nats>(...pipes: PipeGuard<J, Order<K, J>[]>) => Knex.QueryBuilder
 
 export const storm: Storm =
   query =>
@@ -67,5 +71,8 @@ export const storm: Storm =
     return query.id
   }
 
-// const wrong2 = storm(users.address.city)(orderBy('biography', true), filter(propEq('city.name', 'stuff'))) // ok, incorrect!
-const right2 = storm(users.address.city)(orderBy('age', false), orderBy2('biography', true)) // ok, correct!
+// prettier-ignore
+storm(users.address.city)(
+  orderBy('age', false),
+  filter(propEq('name', 'New York')),
+)
