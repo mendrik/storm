@@ -6,8 +6,7 @@ An opinionated, not working, abandoned functional ORM experiment.
 
 The idea was threefold:
 
-1)
-To create a database schema in pure typescript, instead of having sql or own languages for it.
+1) To create a database schema in pure typescript, instead of having sql or own languages for it.
 See [model example](https://github.com/mendrik/storm/blob/main/src/model.ts).
 
 2) Being able to work on top of database data in a functional way, where storm behaves like a `pipe`.
