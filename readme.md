@@ -2,7 +2,7 @@
 
 An opinionated, not working, abandoned functional ORM experiment.
 
-# Background
+## Background
 
 The idea was threefold:
 
@@ -23,7 +23,7 @@ storm(users.address.city)(
 Columns can be accessed as properties and homonymous columns would be prefixed with table names users_id, address_id, city_id etc.
 
 
-# Status
+## Status
 
 I gave up on it after running into type problems how to make sure orderBy() could not be written before filter() in a storm-pipe. 
 But all in all i had fun trying out ohm-js and get a bit deeper into typescript types.
